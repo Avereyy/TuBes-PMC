@@ -4,9 +4,6 @@
 #include <math.h>
 #include <time.h>
 
-#define R 6371
-#define PI 3.14159265359
-
 typedef struct {
     char name[50];
     double latitude;
@@ -14,7 +11,7 @@ typedef struct {
 } City;
 
 double deg2rad(double deg) {
-    return deg * (PI/180);
+    return deg * (3.14159265359/180);
 }
 double hitungJarak(City kota1, City kota2) {
     double lat1 = deg2rad(kota1.latitude);
@@ -25,7 +22,7 @@ double hitungJarak(City kota1, City kota2) {
     double dlon = lon2 - lon1;
     double dlat = lat2 - lat1;
     
-    double jarak = 2*R*asin(sqrt(pow(sin(dlat / 2), 2) + cos(lat1) * cos(lat2) * pow(sin(dlon / 2), 2)));
+    double jarak = 2*6371*asin(sqrt(pow(sin(dlat / 2), 2) + cos(lat1) * cos(lat2) * pow(sin(dlon / 2), 2)));
     
     return jarak;
 }
