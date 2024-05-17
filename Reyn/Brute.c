@@ -58,18 +58,30 @@ void copyRoute(int a[], int b[], int numKota) {
     }
 }
 
+void printRoute(City kota[], int route[], int numKota) {
+    for (int i = 0; i < numKota; i++) {
+        printf("%s -> ", kota[route[i]].name);
+    }
+    printf("%s\n", kota[route[0]].name);
+}
+
 void bruteForce(City kota[], int route[], int start, int end, int bestRoute[], double *minDistance, int numKota) {
     if (start == end) { //start = 1 ; end = jumlah kota (numKota-1)
         double currentDistance = hitungJarakRute(kota, route, numKota); //Cari jarak antar kota
+        /* periksa tiap iterasi
+        printf("Temp Route: ");
+        printRoute(kota, route, numKota);
+        printf("Route distance: %.5f km\n", currentDistance);
+        */
         if (currentDistance < *minDistance) {
             *minDistance = currentDistance;
-            copyRoute(route, bestRoute, numKota);
+            copyRoute(route, bestRoute, numKota); //Memasukan nilai jarak yang ada ke bestRoute
         }
     } 
     else {
         for (int i = start; i <= end; i++) {
             swap(&route[start], &route[i]);
-            bruteForce(kota, route, start + 1, end, bestRoute, minDistance, numKota); //Mulai lagi dengan index + 1
+            bruteForce(kota, route, start + 1, end, bestRoute, minDistance, numKota); //Mulai iterasi dengan index + 1
             swap(&route[start], &route[i]);
         }
     }
