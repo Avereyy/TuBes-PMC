@@ -79,7 +79,7 @@ void bruteForce(City kota[], int route[], int start, int end, int bestRoute[], d
         }
     } 
     else {
-        for (int i = start; i <= end; i++) {
+        for (int i = start; i <= end; i++) { //Menambahkan kota per kota ke Route
             swap(&route[start], &route[i]);
             bruteForce(kota, route, start + 1, end, bestRoute, minDistance, numKota); //Mulai iterasi dengan index + 1
             swap(&route[start], &route[i]);
