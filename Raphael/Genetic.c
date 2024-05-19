@@ -20,10 +20,12 @@ typedef struct {
     Kota* rute;
 } Kromosom;
 
+// Fungsi untuk mengonversi derajat ke radian
 double deg2rad(double deg) {
     return deg * (3.14159265359 / 180);
 }
 
+// Fungsi untuk menghitung jarak antara dua kota menggunakan rumus Haversine
 double hitungJarak(Kota kota1, Kota kota2) {
     double lat1 = deg2rad(kota1.latitude);
     double lon1 = deg2rad(kota1.longitude);
@@ -37,6 +39,7 @@ double hitungJarak(Kota kota1, Kota kota2) {
     return jarak;
 }
 
+// Fungsi untuk menghitung total jarak dari rute yang diberikan
 double hitungTotalJarak(Kota* rute, int panjangkota) {
     double total_jarak = 0;
     for (int i = 0; i < panjangkota - 1; i++) {
@@ -46,6 +49,7 @@ double hitungTotalJarak(Kota* rute, int panjangkota) {
     return total_jarak;
 }
 
+// Fungsi untuk membaca daftar kota dari file
 Kota* buatKota(char* filename, int* panjangkota) {
     FILE* file = fopen(filename, "r");
     if (file == NULL) {
@@ -77,6 +81,7 @@ Kota* buatKota(char* filename, int* panjangkota) {
     return kota;
 }
 
+// Fungsi untuk membuat populasi awal dari kromosom
 Kromosom* buatPopulasi(Kota* kota, int panjangkota, int size) {
     Kromosom* populasi = (Kromosom*)malloc(size * sizeof(Kromosom));
 
@@ -97,6 +102,7 @@ Kromosom* buatPopulasi(Kota* kota, int panjangkota, int size) {
     return populasi;
 }
 
+// Fungsi untuk melakukan seleksi turnamen
 Kromosom selection(Kromosom* populasi, int size) {
     Kromosom best = populasi[rand() % size];
     for (int i = 1; i < TOURNAMENT_SELECTION_SIZE; i++) {
@@ -108,6 +114,7 @@ Kromosom selection(Kromosom* populasi, int size) {
     return best;
 }
 
+// Fungsi untuk melakukan crossover antara dua kromosom
 void crossover(Kromosom parent1, Kromosom parent2, Kromosom* child1, Kromosom* child2, int panjangkota) {
     int point = 1 + rand() % (panjangkota - 1);
     int k1 = point, k2 = point;
@@ -136,6 +143,7 @@ void crossover(Kromosom parent1, Kromosom parent2, Kromosom* child1, Kromosom* c
     child2->jarak = hitungTotalJarak(child2->rute, panjangkota);
 }
 
+// Fungsi untuk melakukan mutasi pada kromosom
 void mutate(Kromosom* Kromosom, int panjangkota) {
     for (int i = 1; i < panjangkota; i++) {
         if ((double)rand() / RAND_MAX < MUTATION_RATE) {
@@ -149,6 +157,7 @@ void mutate(Kromosom* Kromosom, int panjangkota) {
     Kromosom->jarak = hitungTotalJarak(Kromosom->rute, panjangkota);
 }
 
+// Fungsi utama algoritma genetika untuk menemukan rute terbaik
 Kromosom geneticAlgorithm(Kota* kota, int panjangkota) {
     Kromosom* populasi = buatPopulasi(kota, panjangkota, populasi_SIZE);
     Kromosom best = populasi[0];
