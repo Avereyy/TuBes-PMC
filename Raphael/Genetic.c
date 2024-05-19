@@ -241,6 +241,11 @@ int main() {
         kota[startIndex] = temp;
     }
 
+    if (startIndex == -1) {
+        printf("Kota tidak ditemukan\n");
+        return 1;
+    }
+
     clock_t start = clock();
     Kromosom best = geneticAlgorithm(kota, panjangkota);
     clock_t end = clock();
