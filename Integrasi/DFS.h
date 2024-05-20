@@ -15,7 +15,7 @@ typedef struct {
 
 
 double rumusHaversine(double lat1, double lon1, double lat2, double lon2) {
-    const double R = 6371000; // Radius bumi dalam meter
+    const double Radius = 6371000; // Radius bumi dalam meter
     double phi1 = lat1 * M_PI / 180.0;
     double phi2 = lat2 * M_PI / 180.0;
     double deltaPhi = (lat2 - lat1) * M_PI / 180.0;
@@ -26,7 +26,7 @@ double rumusHaversine(double lat1, double lon1, double lat2, double lon2) {
                sin(deltaLambda / 2) * sin(deltaLambda / 2);
     double c = 2 * atan2(sqrt(a), sqrt(1 - a));
 
-    double jarak = R * c; // Jarak dalam meter
+    double jarak = Radius * c; // Jarak dalam meter
     return jarak / 1000.0; // Jarak dalam kilometer
 }
 
