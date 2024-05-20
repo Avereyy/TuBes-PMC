@@ -13,17 +13,15 @@ int main() {
     printf("Nama file csv: ");
     fgets(filename, sizeof(filename), stdin);
     filename[strcspn(filename, "\n")] = '\0';
-    printf("Kota Awal: ");
-    fgets(startingCity, sizeof(startingCity), stdin);
-    startingCity[strcspn(startingCity, "\n")] = '\0';
-
     City cities[MAX_CITIES];
     int numCities = readCities(filename, cities);
-
     if (numCities == 0) {
         printf("File Kosong\n");
         return 1;
     }
+    printf("Kota Awal: ");
+    fgets(startingCity, sizeof(startingCity), stdin);
+    startingCity[strcspn(startingCity, "\n")] = '\0';
 
     int startCityIndex = -1;
     for (int i = 0; i < numCities; i++) {
@@ -52,9 +50,10 @@ int main() {
             acoTSP(cities, numCities, numCities, startCityIndex, &bestAnt);
             i=0;
         }
-        else{
-            printf("%s -> ", cities[bestAnt.path[i]].name);
-        }
+
+    }
+    for (int i = 0; i < numCities; i++) {
+        printf("%s -> ", cities[bestAnt.path[i]].name);
     }
     printf("%s\n", cities[bestAnt.path[0]].name);
     printf("Jarak Tempuh: %f km\n", bestAnt.length);
