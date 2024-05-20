@@ -27,7 +27,5 @@ int main(){
     PSO(filename,startingCity);
     branch(filename,startingCity);
     BFS(filename,startingCity);
-
-
-    //DFS_final(filename);
+    DFS_final(filename);
 }
