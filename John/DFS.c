@@ -25,26 +25,25 @@ double rumusHaversine(double lat1, double lon1, double lat2, double lon2) {
                sin(deltaLambda / 2) * sin(deltaLambda / 2);
     double c = 2 * atan2(sqrt(a), sqrt(1 - a));
 
-    double jarak = R * c; // Jarak dalam meter
-    return jarak / 1000.0; // Jarak dalam kilometer
+    double jarak = R * c; // Meter
+    return jarak / 1000.0; // Kilometer
 }
 
 void DFS(int kotaSaatIni, int dikunjungi[], double jarakSaatIni, double *jarakMin, int jalur[], int kedalaman, int jalurTerbaik[], Kota kota[], int jumlahKota) {
     dikunjungi[kotaSaatIni] = 1;
     jalur[kedalaman] = kotaSaatIni;
 
-    if (kedalaman == jumlahKota - 1) {
-        // Kembali ke kota awal untuk membentuk loop
+    if (kedalaman == jumlahKota - 1) { // Setelah semua dikunjungi, kembali ke kota awal
         jarakSaatIni += rumusHaversine(kota[kotaSaatIni].lintang, kota[kotaSaatIni].bujur, kota[jalur[0]].lintang, kota[jalur[0]].bujur);
         if (jarakSaatIni < *jarakMin) {
             *jarakMin = jarakSaatIni;
             memcpy(jalurTerbaik, jalur, jumlahKota * sizeof(int));
         }
-        dikunjungi[kotaSaatIni] = 0;
+        dikunjungi[kotaSaatIni] = 0; // Batal pengunjungan
         return;
     }
 
-    for (int i = 0; i < jumlahKota; i++) {
+    for (int i = 0; i < jumlahKota; i++) { // Kunjungi kota yang belum dikunjungi
         if (!dikunjungi[i]) {
             double jarakBaru = jarakSaatIni + rumusHaversine(kota[kotaSaatIni].lintang, kota[kotaSaatIni].bujur, kota[i].lintang, kota[i].bujur);
             DFS(i, dikunjungi, jarakBaru, jarakMin, jalur, kedalaman + 1, jalurTerbaik, kota, jumlahKota);
@@ -54,7 +53,7 @@ void DFS(int kotaSaatIni, int dikunjungi[], double jarakSaatIni, double *jarakMi
     dikunjungi[kotaSaatIni] = 0;
 }
 
-int bacaKotaDariCSV(const char *filename, Kota kota[]) {
+int bacaKotaCSV(const char *filename, Kota kota[]) {
     FILE *file = fopen(filename, "r");
     if (!file) {
         perror("Tidak dapat membuka file");
@@ -102,7 +101,7 @@ void cetakSemuaJarak(Kota kota[], int jumlahKota) {
 int main() {
     Kota kota[MAX_KOTA];
     const char *filename = "kota_05.csv";
-    int jumlahKota = bacaKotaDariCSV(filename, kota);
+    int jumlahKota = bacaKotaCSV(filename, kota);
 
     if (jumlahKota <= 0) {
         printf("Tidak ada kota untuk diproses.\n");
@@ -116,7 +115,7 @@ int main() {
     int jalurTerbaik[MAX_KOTA];
     double jarakMin = INFINITY;
 
-    struct timespec start, end;
+    struct timespec start, end; // Waktu DFS
     clock_gettime(CLOCK_MONOTONIC, &start);
 
     // Mulai DFS dari kota pertama (indeks 0)
@@ -139,7 +138,7 @@ int main() {
             printf(" -> ");
         }
     }
-    printf(" -> %s\n", kota[jalurTerbaik[0]].nama); // Menutup loop kembali ke kota awal
+    printf(" -> %s\n", kota[jalurTerbaik[0]].nama); // Menambah jarak ke kota tujuan akhir
     printf("Jarak: %.2f km\n", jarakMin);
     printf("Jarak terperinci: ");
     for (int i = 0; i < jumlahKota; i++) {
