@@ -127,7 +127,7 @@ void cetakSemuaJarak(Kota_DFS kota[], int jumlahKota) {
 
 int DFS_final(char filename[]) {
     Kota_DFS kota[MAX_KOTA];
-    printf("Algoritma DFS:");
+    printf("\n\nAlgoritma DFS:\n");
     int jumlahKota = bacaKotaDariCSV(filename, kota);
 
     if (jumlahKota <= 0) {
