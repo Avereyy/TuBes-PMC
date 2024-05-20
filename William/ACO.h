@@ -36,13 +36,6 @@ int readCities(const char* filename, City cities[]) {
     return count;
 }
 
-void initializePheromones(double pheromones[MAX_CITIES][MAX_CITIES], int numCities) {
-    for (int i = 0; i < numCities; i++) {
-        for (int j = 0; j < numCities; j++) {
-            pheromones[i][j] = 1.0;
-        }
-    }
-}
 
 void initializeAnts(Ant ants[], int numAnts, int numCities, int startCity) {
     for (int i = 0; i < numAnts; i++) {
@@ -65,7 +58,7 @@ double calculateProbability(int from, int to, double pheromones[MAX_CITIES][MAX_
     return pheromone * heuristic;
 }
 
-int pilihKota(int currentCity, double pheromones[MAX_CITIES][MAX_CITIES], double jarak[MAX_CITIES][MAX_CITIES], int visited[], int numCities) {
+int chooseNextCity(int currentCity, double pheromones[MAX_CITIES][MAX_CITIES], double jarak[MAX_CITIES][MAX_CITIES], int visited[], int numCities) {
     double probabilities[MAX_CITIES] = {0};
     double sum = 0.0;
 
@@ -116,7 +109,8 @@ void updatePheromones(double pheromones[MAX_CITIES][MAX_CITIES], Ant ants[], int
             pheromones[i][j] += deltaPheromones[i][j];
             if (pheromones[i][j] < 0.01) {
                 pheromones[i][j] = 0.01;
-            } else if (pheromones[i][j] > 100.0) {
+            } 
+            else if (pheromones[i][j] > 100.0) {
                 pheromones[i][j] = 100.0;
             }
         }
@@ -148,15 +142,15 @@ void localSearch2Opt(Ant* ant, double jarak[MAX_CITIES][MAX_CITIES], int numCiti
     do {
         improve = 0;
         for (int i = 1; i < numCities - 1; i++) {
-            for (int k = i + 1; k < numCities; k++) {
-                twoOptSwap(ant->path, i, k, numCities);
+            for (int j = i + 1; j < numCities; j++) {
+                twoOptSwap(ant->path, i, j, numCities);
                 double jarakBaru = panjangPath(ant, jarak, numCities);
                 if (jarakBaru < jarakTerdekat) {
                     jarakTerdekat = jarakBaru;
                     ant->length = jarakBaru;
                     improve = 1;
                 } else {
-                    twoOptSwap(ant->path, i, k, numCities); 
+                    twoOptSwap(ant->path, i, j, numCities); 
                 }
             }
         }
@@ -184,23 +178,25 @@ void acoTSP(City cities[], int numCities, int numAnts, int startCity, Ant* bestA
         Ant ants[MAX_ANTS];
         initializeAnts(ants, numAnts, numCities, startCity);
 
-        for (int k = 0; k < numAnts; k++) {
+        for (int i = 0; i < numAnts; i++) {
             int visited[MAX_CITIES] = {0};
             visited[startCity] = 1;
 
-            for (int i = 1; i < numCities; i++) {
-                int currentCity = ants[k].path[i - 1];
-                int nextCity = pilihKota(currentCity, pheromones, jarak, visited, numCities);
-                if (nextCity == -1) break;
-                ants[k].path[i] = nextCity;
+            for (int j = 1; j < numCities; j++) {
+                int currentCity = ants[i].path[j - 1];
+                int nextCity = chooseNextCity(currentCity, pheromones, jarak, visited, numCities);
+                if (nextCity == -1) {
+                    break;
+                }
+                ants[i].path[j] = nextCity;
                 visited[nextCity] = 1;
             }
 
-            ants[k].length = panjangPath(&ants[k], jarak, numCities);
-            localSearch2Opt(&ants[k], jarak, numCities); 
+            ants[i].length = panjangPath(&ants[i], jarak, numCities);
+            localSearch2Opt(&ants[i], jarak, numCities); 
 
-            if (ants[k].length < bestAnt->length) {
-                *bestAnt = ants[k];
+            if (ants[i].length < bestAnt->length) {
+                *bestAnt = ants[i];
             }
         }
 
