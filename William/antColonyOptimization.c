@@ -204,7 +204,7 @@ void acoTSP(City cities[], int numCities, int numAnts, int startCity, Ant* bestA
     }
 }
 
-int main() {
+int antColonyOptimization() {
     char filename[100] ;
     char startingCity[50] ;
 
