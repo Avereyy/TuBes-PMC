@@ -6,7 +6,7 @@
 
 #define MAX_CITIES 100
 #define SWARM_SIZE 30
-#define MAX_ITERATIONS 1000
+#define MAX_ITERATIONS 10000
 #define W 0.5        // Inertia weight
 #define C1 1.0       // Cognitive (particle's best)
 #define C2 1.0       // Social (global best)
@@ -35,12 +35,9 @@ double hitungJarak(City kota1, City kota2) {
     double lon1 = deg2rad(kota1.longitude);
     double lat2 = deg2rad(kota2.latitude);
     double lon2 = deg2rad(kota2.longitude);
-    
     double dlon = lon2 - lon1;
     double dlat = lat2 - lat1;
-    
     double jarak = 2 * 6371 * asin(sqrt(pow(sin(dlat / 2), 2) + cos(lat1) * cos(lat2) * pow(sin(dlon / 2), 2)));
-    
     return jarak;
 }
 
@@ -109,7 +106,7 @@ int main() {
     char fileName[50];
     char kotaTujuan[50];
 
-    printf("Enter list of kota file name: ");
+    printf("Enter list of cities file name: ");
     scanf("%s", fileName);
 
     printf("Enter starting point: ");
@@ -156,12 +153,12 @@ int main() {
     int gbest[MAX_CITIES];
     double gbest_fitness = INFINITY;
 
-// Particles
-
     initializeParticles(particles, numKota, SWARM_SIZE);
 
-// PSO
+// Start time
+    clock_t start_time = clock();
 
+// PSO
     for (int iter = 0; iter < MAX_ITERATIONS; iter++) {
         for (int i = 0; i < SWARM_SIZE; i++) {
             particles[i].fitness = calculateTotalDistance(kota, particles[i].path, numKota);
@@ -179,13 +176,21 @@ int main() {
         updateVelocityAndPosition(particles, numKota, SWARM_SIZE, gbest, W, C1, C2);
     }
 
+// End time
+    clock_t end_time = clock();
+
+// Calculate time
+    double time_elapsed = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+
     printf("Best route found:\n");
     for (int i = 0; i < numKota; i++) {
         printf("%s -> ", kota[gbest[i]].name);
     }
     printf("%s\n", kota[gbest[0]].name);
-
     printf("Best route distance: %.5f km\n", gbest_fitness);
+
+// Print time
+    printf("Time elapsed: %.5f s\n", time_elapsed);
 
     return 0;
 }
