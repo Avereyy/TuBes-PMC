@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "antColonyOptimization.h"
-// #include "DFS.h"
+#include "DFS.h"
 #include "Genetic.h"
 #include "BruteForce.h"
 #include"PSO.h"
