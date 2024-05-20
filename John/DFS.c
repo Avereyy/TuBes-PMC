@@ -13,7 +13,7 @@ typedef struct {
     double bujur;
 } Kota;
 
-// Fungsi untuk menghitung jarak antara dua koordinat menggunakan rumus Haversine
+
 double rumusHaversine(double lat1, double lon1, double lat2, double lon2) {
     const double R = 6371000; // Radius bumi dalam meter
     double phi1 = lat1 * M_PI / 180.0;
@@ -30,13 +30,13 @@ double rumusHaversine(double lat1, double lon1, double lat2, double lon2) {
     return jarak / 1000.0; // Jarak dalam kilometer
 }
 
-// Fungsi DFS untuk mencari jalur terpendek
+
 void DFS(int kotaSaatIni, int dikunjungi[], double jarakSaatIni, double *jarakMin, int jalur[], int kedalaman, int jalurTerbaik[], Kota kota[], int jumlahKota) {
     dikunjungi[kotaSaatIni] = 1; // Tandai kota saat ini sebagai dikunjungi
     jalur[kedalaman] = kotaSaatIni;
 
     if (kedalaman == jumlahKota - 1) {
-        // Jika semua kota sudah dikunjungi, kembali ke kota awal untuk membentuk loop
+        // Jika semua kota sudah dikunjungi, kembali ke kota awal untuk membuat loop
         jarakSaatIni += rumusHaversine(kota[kotaSaatIni].lintang, kota[kotaSaatIni].bujur, kota[jalur[0]].lintang, kota[jalur[0]].bujur);
         if (jarakSaatIni < *jarakMin) {
             *jarakMin = jarakSaatIni;
@@ -54,10 +54,10 @@ void DFS(int kotaSaatIni, int dikunjungi[], double jarakSaatIni, double *jarakMi
         }
     }
 
-    dikunjungi[kotaSaatIni] = 0; // Batalkan penandaan kunjungan
+    dikunjungi[kotaSaatIni] = 0;
 }
 
-// Fungsi untuk membaca data kota dari file CSV
+
 int bacaKotaDariCSV(const char *filename, Kota kota[]) {
     FILE *file = fopen(filename, "r");
     if (!file) {
@@ -86,7 +86,7 @@ int bacaKotaDariCSV(const char *filename, Kota kota[]) {
             }
         }
 
-        // Tambahkan nomor urut jika nama kota sama dan lintang-bujurnya berbeda
+        // Tambahkan keterangan nomor jika nama kota sama
         if (nama_terdapat > 0) {
             snprintf(kota[count].nama, MAKS_NAMA_PANJANG, "%s_%d", nama, nama_terdapat + 1);
         } else {
@@ -102,7 +102,6 @@ int bacaKotaDariCSV(const char *filename, Kota kota[]) {
     return count;
 }
 
-// Fungsi untuk mencetak matriks jarak antara semua kota
 void cetakSemuaJarak(Kota kota[], int jumlahKota) {
     printf("Jarak antara kota-kota:\n");
     printf("%-15s", "Kota");
@@ -128,7 +127,7 @@ void cetakSemuaJarak(Kota kota[], int jumlahKota) {
 
 int main() {
     Kota kota[MAX_KOTA];
-    const char *filename = "kota_05.csv";
+    const char *filename = "kota_08.csv";
     int jumlahKota = bacaKotaDariCSV(filename, kota);
 
     if (jumlahKota <= 0) {
