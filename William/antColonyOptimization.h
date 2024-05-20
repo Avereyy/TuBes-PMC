@@ -204,10 +204,7 @@ void acoTSP(City cities[], int numCities, int numAnts, int startCity, Ant* bestA
     }
 }
 
-int antColonyOptimization() {
-    char filename[100] ;
-    char startingCity[50] ;
-
+int antColonyOptimization(char filename[], char startingCity[]) {
     printf("Nama file csv: ");
     fgets(filename, sizeof(filename), stdin);
     filename[strcspn(filename, "\n")] = '\0';
