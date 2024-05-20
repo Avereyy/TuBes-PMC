@@ -5,27 +5,29 @@
 #include <limits.h>
 #include <float.h>
 #include <stdbool.h>
-#define M_PI 3.14159265358979323846
-#define R 6371
+#include <time.h>
 
-struct Kota {
-    char Nama[50];
-    float Lattitude;
+#define M_PI 3.14159265358979323846
+#define EARTH_RADIUS 6371
+
+struct City {
+    char Name[50];
+    float Latitude;
     float Longitude;
-    struct Kota* next;
+    struct City* next;
 };
 
-void insert(struct Kota** head, char* new_nama, float new_lattitude, float new_longitude) {
-    struct Kota* new_Kota = (struct Kota*)malloc(sizeof(struct Kota));
-    strcpy(new_Kota->Nama, new_nama);
-    new_Kota->Lattitude = new_lattitude;
-    new_Kota->Longitude = new_longitude;
-    new_Kota->next = *head;
-    *head = new_Kota;
+void addCity(struct City** head, char* name, float latitude, float longitude) {
+    struct City* newCity = (struct City*)malloc(sizeof(struct City));
+    strcpy(newCity->Name, name);
+    newCity->Latitude = latitude;
+    newCity->Longitude = longitude;
+    newCity->next = *head;
+    *head = newCity;
 }
 
-void freeList(struct Kota* head) {
-    struct Kota* tmp;
+void freeCityList(struct City* head) {
+    struct City* tmp;
     while (head != NULL) {
         tmp = head;
         head = head->next;
@@ -33,33 +35,33 @@ void freeList(struct Kota* head) {
     }
 }
 
-float distance(float lat1, float lon1, float lat2, float lon2) {
+float calculateDistance(float lat1, float lon1, float lat2, float lon2) {
     float dlat = (lat2 - lat1) * M_PI / 180.0;
     float dlon = (lon2 - lon1) * M_PI / 180.0;
     float a = sin(dlat / 2) * sin(dlat / 2) + cos(lat1 * M_PI / 180.0) * cos(lat2 * M_PI / 180.0) * sin(dlon / 2) * sin(dlon / 2);
     float c = 2 * atan2(sqrt(a), sqrt(1 - a));
-    return R * c;
+    return EARTH_RADIUS * c;
 }
 
-void printPath(struct Kota* head, int path[], int n) {
-    struct Kota* cities[n];
-    struct Kota* current = head;
+void displayPath(struct City* head, int path[], int n) {
+    struct City* cities[n];
+    struct City* current = head;
     for (int i = 0; i < n; i++) {
         cities[i] = current;
         current = current->next;
     }
     for (int i = 0; i < n; i++) {
-        printf("%s -> ", cities[path[i]]->Nama);
+        printf("%s -> ", cities[path[i]]->Name);
     }
-    printf("%s\n", cities[path[0]]->Nama);
+    printf("%s\n", cities[path[0]]->Name);
 }
 
-void bfs(struct Kota *head, int path[], int n, int startIdx) {
+void bfsTSP(struct City *head, int path[], int n, int startIdx) {
     float minDist = FLT_MAX;
     int minPath[n];
 
-    struct Kota* cities[n];
-    struct Kota* current = head;
+    struct City* cities[n];
+    struct City* current = head;
     for (int i = 0; i < n; i++) {
         cities[i] = current;
         current = current->next;
@@ -91,7 +93,7 @@ void bfs(struct Kota *head, int path[], int n, int startIdx) {
         front = front->next;
 
         if (node->level == n) {
-            node->cost += distance(cities[node->path[n-1]]->Lattitude, cities[node->path[n-1]]->Longitude, cities[node->path[0]]->Lattitude, cities[node->path[0]]->Longitude);
+            node->cost += calculateDistance(cities[node->path[n-1]]->Latitude, cities[node->path[n-1]]->Longitude, cities[node->path[0]]->Latitude, cities[node->path[0]]->Longitude);
             if (node->cost < minDist) {
                 minDist = node->cost;
                 memcpy(minPath, node->path, n * sizeof(int));
@@ -110,7 +112,7 @@ void bfs(struct Kota *head, int path[], int n, int startIdx) {
                     memcpy(newNode->path, node->path, n * sizeof(int));
                     newNode->path[node->level] = i;
                     newNode->level = node->level + 1;
-                    newNode->cost = node->cost + distance(cities[node->path[node->level-1]]->Lattitude, cities[node->path[node->level-1]]->Longitude, cities[i]->Lattitude, cities[i]->Longitude);
+                    newNode->cost = node->cost + calculateDistance(cities[node->path[node->level-1]]->Latitude, cities[node->path[node->level-1]]->Longitude, cities[i]->Latitude, cities[i]->Longitude);
                     newNode->next = NULL;
                     if (rear != NULL) {
                         rear->next = newNode;
@@ -126,49 +128,40 @@ void bfs(struct Kota *head, int path[], int n, int startIdx) {
     }
 
     printf("Minimum distance: %f km\n", minDist);
-    printPath(head, minPath, n);
+    displayPath(head, minPath, n);
+}
+
+void loadCitiesFromCSV(const char* filename, struct City** head) {
+    FILE* file = fopen(filename, "r");
+    if (!file) {
+        printf("Could not open file %s\n", filename);
+        exit(EXIT_FAILURE);
+    }
+
+    char line[128];
+    while (fgets(line, sizeof(line), file)) {
+        char name[50];
+        float latitude, longitude;
+        if (sscanf(line, "%[^,],%f,%f", name, &latitude, &longitude) == 3) {
+            addCity(head, name, latitude, longitude);
+        }
+    }
+
+    fclose(file);
 }
 
 int main() {
-    char filename[50];
+    struct City* head = NULL;
+    loadCitiesFromCSV("cities.csv", &head);
+
     char start[50];
-
-    printf("Enter list of cities file name: ");
-    scanf("%s", filename);
-
-    struct Kota* head = NULL;
-    FILE* file = fopen(filename, "r");
-
-    if (file == NULL) {
-        printf("Failed to open file %s. Make sure the file exists.\n", filename);
-        return 1;
-    }
-
-    char line[100];
-    while (fgets(line, sizeof(line), file)) {
-        char nama[50];
-        float Lattitude, Longitude;
-
-        char* token = strtok(line, ",");
-        strcpy(nama, token);
-
-        token = strtok(NULL, ",");
-        Lattitude = atof(token);
-
-        token = strtok(NULL, ",");
-        Longitude = atof(token);
-
-        insert(&head, nama, Lattitude, Longitude);
-    }
-    fclose(file);
-
     printf("Enter starting point: ");
     scanf(" %[^\n]s", start);
 
-    int n = 0;
-    struct Kota* current = head;
+    int cityCount = 0;
+    struct City* current = head;
     while (current != NULL) {
-        n++;
+        cityCount++;
         current = current->next;
     }
 
@@ -176,7 +169,7 @@ int main() {
     current = head;
     int idx = 0;
     while (current != NULL) {
-        if (strcmp(current->Nama, start) == 0) {
+        if (strcmp(current->Name, start) == 0) {
             startIdx = idx;
             break;
         }
@@ -186,13 +179,20 @@ int main() {
 
     if (startIdx == -1) {
         printf("Starting point not found in the list.\n");
-        freeList(head);
+        freeCityList(head);
         return 1;
     }
 
-    int path[n];
-    bfs(head, path, n, startIdx);
+    int path[cityCount];
+    
+    clock_t start_time = clock();
 
-    freeList(head);
+    bfsTSP(head, path, cityCount, startIdx);
+
+    clock_t end_time = clock();
+    double elapsed_time = ((double) (end_time - start_time)) / CLOCKS_PER_SEC;
+    printf("Time elapsed: %f seconds\n", elapsed_time);
+
+    freeCityList(head);
     return 0;
 }
