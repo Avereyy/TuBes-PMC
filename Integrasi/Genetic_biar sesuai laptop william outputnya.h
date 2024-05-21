@@ -219,32 +219,34 @@ Kromosom geneticAlgorithm(Kota* kota, int panjangkota) {
         generasi++;
     }
 
-    free(populasi);
 
     return best;
 }
 
-int genetic(char filename[], char startingPoint[]) {
+
+int genetic(char filename[],char startingPoint[]) {
     printf("\nAlgortima Genetic:\n");
-    srand(time(NULL));
+    srand(time(NULL)); // Membuat seed untuk fungsi rand() berdasarkan waktu saat ini
+
 
     int panjangkota;
-    Kota* kota = buatKota(filename, &panjangkota);
+    Kota* kota = buatKota(filename, &panjangkota); // Memanggil fungsi buatKota untuk membuat array kota dari file yang diberikan
 
-    int startIndex = -1;
+    int startIndex = -1; // Inisialisasi indeks titik awal ke -1 (belum ditemukan)
     for (int i = 0; i < panjangkota; i++) {
         if (strcmp(kota[i].nama, startingPoint) == 0) {
-            startIndex = i;
+            startIndex = i; // Jika nama kota sesuai dengan titik awal, simpan indeksnya
             break;
         }
     }
     if (startIndex != -1 && startIndex != 0) {
+        // Tukar posisi kota titik awal dengan kota pertama
         Kota temp = kota[0];
         kota[0] = kota[startIndex];
-        kota[startIndex] = temp;
+        kota[startIndex] = temp; 
     }
 
-    if (startIndex == -1) {
+    if (startIndex == -1) { // Jika titik awal tidak ditemukan dalam daftar kota
         printf("Kota tidak ditemukan\n");
         return 1;
     }
@@ -255,14 +257,14 @@ int genetic(char filename[], char startingPoint[]) {
 
     printf("Best rute found:\n");
     for (int i = 0; i < panjangkota; i++) {
-        printf("%s -> ", kota[i].nama);
+        printf("%s -> ", best.rute[i].nama); // Menampilkan rute terbaik yang ditemukan
     }
-    printf("%s\n", kota[0].nama);
+    printf("%s\n", best.rute[0].nama); // Menampilkan kembali titik awal untuk menunjukkan siklus tertutup
 
     printf("Best rute distance: %.5f km\n", best.jarak);
     printf("Time elapsed: %.10f s\n", ((double)(end - start)) / CLOCKS_PER_SEC);
 
-    free(best.rute);
+    // free(best.rute);
     free(kota);
     return 0;
 }
