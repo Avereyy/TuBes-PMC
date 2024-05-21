@@ -4,7 +4,7 @@
 #include <math.h>
 #include <time.h>
 
-#define POPULATION_SIZE 100
+#define populasi_SIZE 100
 #define TOURNAMENT_SELECTION_SIZE 5
 #define MUTATION_RATE 0.1
 #define CROSSOVER_RATE 0.9
@@ -20,10 +20,12 @@ typedef struct {
     Kota* rute;
 } Kromosom;
 
+// Fungsi untuk mengonversi derajat ke radian
 double deg2rad(double deg) {
     return deg * (3.14159265359 / 180);
 }
 
+// Fungsi untuk menghitung jarak antara dua kota menggunakan rumus Haversine
 double hitungJarak(Kota kota1, Kota kota2) {
     double lat1 = deg2rad(kota1.latitude);
     double lon1 = deg2rad(kota1.longitude);
@@ -37,15 +39,21 @@ double hitungJarak(Kota kota1, Kota kota2) {
     return jarak;
 }
 
+// Fungsi untuk menghitung total jarak dari rute yang diberikan
 double hitungTotalJarak(Kota* rute, int panjangkota) {
     double total_jarak = 0;
+    // Loop untuk menghitung jarak antara setiap pasangan kota dalam rute
     for (int i = 0; i < panjangkota - 1; i++) {
+        // Tambahkan jarak antara kota i dan kota i+1 ke total_jarak
         total_jarak += hitungJarak(rute[i], rute[i + 1]);
     }
+    // Tambahkan jarak antara kota terakhir dalam rute dengan kota pertama untuk membentuk siklus
     total_jarak += hitungJarak(rute[panjangkota - 1], rute[0]);
+    // Kembalikan total jarak rute
     return total_jarak;
 }
 
+// Fungsi untuk membaca daftar kota dari file
 Kota* buatKota(char* filename, int* panjangkota) {
     FILE* file = fopen(filename, "r");
     if (file == NULL) {
@@ -77,34 +85,49 @@ Kota* buatKota(char* filename, int* panjangkota) {
     return kota;
 }
 
+// Fungsi untuk membuat populasi awal dari kromosom
 Kromosom* buatPopulasi(Kota* kota, int panjangkota, int size) {
+     // Alokasikan memori untuk array populasi dengan ukuran 'size'
     Kromosom* populasi = (Kromosom*)malloc(size * sizeof(Kromosom));
 
     for (int i = 0; i < size; i++) {
+        // Alokasikan memori untuk rute kota untuk setiap kromosom
         Kota* rute = (Kota*)malloc(panjangkota * sizeof(Kota));
+        // Salin daftar kota awal ke dalam rute untuk kromosom ini
         memcpy(rute, kota, panjangkota * sizeof(Kota));
-        for (int j = panjangkota - 1; j > 0; j--) { // change from 1 to 0
-            int k = rand() % (j + 1); // change from 1 + rand() % j to rand() % (j + 1)
+         // Mengacak urutan kota-kota dalam rute
+        for (int j = panjangkota - 1; j > 1; j--) {
+            int k = 1 + rand() % j; // Pilih indeks acak antara 1 dan j
+             // Tukar kota di indeks j dengan kota di indeks k
             Kota temp = rute[j];
             rute[j] = rute[k];
             rute[k] = temp;
         }
+        // Hitung total jarak untuk rute yang telah diacak
         double jarak = hitungTotalJarak(rute, panjangkota);
+        // Simpan jarak dan rute dalam kromosom di populasi
         populasi[i].jarak = jarak;
         populasi[i].rute = rute;
     }
+    // Kembalikan pointer ke array populasi yang berisi kromosom
     return populasi;
 }
 
-
+// Fungsi untuk melakukan seleksi turnamen
 Kromosom selection(Kromosom* populasi, int size) {
+    // Inisialisasi kromosom terbaik dengan memilih secara acak dari populasi
     Kromosom best = populasi[rand() % size];
+    // Melakukan seleksi turnamen sebanyak TOURNAMENT_SELECTION_SIZE kali
     for (int i = 1; i < TOURNAMENT_SELECTION_SIZE; i++) {
+        // Memilih kandidat secara acak dari populasi
         Kromosom kandidat = populasi[rand() % size];
+        // Membandingkan jarak kandidat dengan jarak kromosom terbaik saat ini
         if (kandidat.jarak < best.jarak) {
+            // Jika jarak kandidat lebih kecil, maka kandidat menjadi kromosom terbaik baru
             best = kandidat;
         }
     }
+    // Mengembalikan kromosom terbaik yang ditemukan selama seleksi turnamen
     return best;
 }
 
@@ -166,28 +189,37 @@ void mutate(Kromosom* Kromosom, int panjangkota) {
     Kromosom->jarak = hitungTotalJarak(Kromosom->rute, panjangkota);
 }
 
-
+// Fungsi utama algoritma genetika untuk menemukan rute terbaik
 Kromosom geneticAlgorithm(Kota* kota, int panjangkota) {
-    Kromosom* populasi = buatPopulasi(kota, panjangkota, POPULATION_SIZE);
+    Kromosom* populasi = buatPopulasi(kota, panjangkota, populasi_SIZE);
+
+    // Anggap kromosom pertama dalam populasi sebagai yang terbaik awalnya
     Kromosom best = populasi[0];
     int generasi = 0;
 
     while (generasi < 300) {
-        Kromosom* new_populasi = (Kromosom*)malloc(POPULATION_SIZE * sizeof(Kromosom));
+        Kromosom* new_populasi = (Kromosom*)malloc(populasi_SIZE * sizeof(Kromosom));
 
+        // Pertahankan solusi terbaik yang ditemukan sejauh ini
         new_populasi[0] = best;
-        new_populasi[1] = selection(populasi, POPULATION_SIZE);
+        // Seleksi kromosom terbaik kedua
+        new_populasi[1] = selection(populasi, populasi_SIZE);
 
-        for (int i = 2; i < POPULATION_SIZE; i += 2) {
-            Kromosom parent1 = selection(populasi, POPULATION_SIZE);
-            Kromosom parent2 = selection(populasi, POPULATION_SIZE);
+        // Lakukan operasi crossover dan mutasi untuk menghasilkan populasi baru
+        for (int i = 2; i < populasi_SIZE; i += 2) {
+            // Pilih dua induk melalui seleksi turnamen
+            Kromosom parent1 = selection(populasi, populasi_SIZE);
+            Kromosom parent2 = selection(populasi, populasi_SIZE);
 
+            // Alokasikan memori untuk dua anak
             Kromosom child1 = { .rute = (Kota*)malloc(panjangkota * sizeof(Kota)) };
             Kromosom child2 = { .rute = (Kota*)malloc(panjangkota * sizeof(Kota)) };
 
             if ((double)rand() / RAND_MAX < CROSSOVER_RATE) {
+                // Lakukan crossover dengan probabilitas tertentu
                 crossover(parent1, parent2, &child1, &child2, panjangkota);
             } else {
+                // Jika tidak crossover, anak-anak adalah salinan dari induk
                 memcpy(child1.rute, parent1.rute, panjangkota * sizeof(Kota));
                 memcpy(child2.rute, parent2.rute, panjangkota * sizeof(Kota));
                 child1.jarak = parent1.jarak;
@@ -197,32 +229,38 @@ Kromosom geneticAlgorithm(Kota* kota, int panjangkota) {
             mutate(&child1, panjangkota);
             mutate(&child2, panjangkota);
 
+            // Masukkan anak-anak ke dalam populasi baru
             new_populasi[i] = child1;
             new_populasi[i + 1] = child2;
         }
 
-        for (int i = 0; i < POPULATION_SIZE; i++) {
-            if (&populasi[i] != &best) {
-                // free(populasi[i].rute);
-            }
-        }
+        // Bebaskan memori dari populasi lama
         free(populasi);
+        // Set populasi baru sebagai populasi saat ini
         populasi = new_populasi;
         best = populasi[0];
-
-        for (int i = 1; i < POPULATION_SIZE; i++) {
+        // Cari kromosom terbaik dalam populasi baru
+        for (int i = 1; i < populasi_SIZE; i++) {
             if (populasi[i].jarak < best.jarak) {
                 best = populasi[i];
             }
         }
-
+        // looping sampai generasi sesuai yang diinginkan
         generasi++;
     }
 
+    // Bebaskan memori dari kromosom yang bukan yang terbaik
+    for (int i = 0; i < populasi_SIZE; i++) {
+        if (&populasi[i] != &best) {
+            // free(populasi[i].rute);
+        }
+    }
+    // Bebaskan memori dari populasi
+    // free(populasi);
 
+    // Kembalikan kromosom terbaik yang ditemukan
     return best;
 }
-
 
 int genetic(char filename[],char startingPoint[]) {
     printf("\nAlgortima Genetic:\n");
